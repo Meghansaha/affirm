@@ -125,8 +125,8 @@
     lapply(min, max_width, na.rm = TRUE) |>
     unlist()
 
-  # set a width for notes columns
-  vec_lengths[["Notes"]] <- 30
+  # set a width for Comment column
+  vec_lengths[["Comment"]] <- 30
 
   return(vec_lengths)
 }
@@ -158,7 +158,7 @@
   vec_keep_cols <- names(unlist(vec_present[unlist(vec_present)]))
   # create a data frame with columns to keep
   df_keep <- df_summary |>
-    dplyr::select(dplyr::all_of(vec_keep_cols)) |>
+    dplyr::select(dplyr::all_of(c("assigned_to", vec_keep_cols))) |>
     dplyr::select(-"data")
 
   return(df_keep)
@@ -195,8 +195,12 @@
 .add_affirmation_sheet <- function(wb, df_summary_row){
 
   # data frame of single affirmation results
-  df_affirmation <- df_summary_row[["data"]][[1]] |>
-    dplyr::mutate(Notes = NA)
+  df_affirmation <-
+    df_summary_row[["data"]][[1]] |>
+    dplyr::mutate(
+      Status = NA,
+      Comment = NA
+    )
 
   # labels of the data frame of single affirmation results
 
@@ -238,7 +242,8 @@
         openxlsx2::wb_add_font(
           dims = openxlsx2::wb_dims(x = df_labels, from_row = 3, col_names = FALSE),
           italic = "italic",
-          color = openxlsx2::wb_color(hex = "#7F7F7F")
+          bold = "bold",
+          color = openxlsx2::wb_color(hex = "#000000")
         ) |>
         # wrap text on variable labels
         openxlsx2::wb_add_cell_style(
