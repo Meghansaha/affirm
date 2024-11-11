@@ -1,7 +1,5 @@
 # affirm (development version)
 
-# affirm 0.3.0
-
 * Update `affirm_excel_report()` and applicable utility functions to now export affirmations alphabetically in the summary sheet and tabs of Excel report.
 
 * Update applicable utility functions to introduce small formatting changes in the Excel report output. This includes removing the ‘Notes’ column from individual sheets and replacing it with the ‘Status’ and ‘Comment’ columns. The formatting of variable labels is changed to a bold black font in the Excel report output.
