@@ -62,13 +62,15 @@ affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", ov
     affirm_report_raw_data() |>
     dplyr::mutate(
       affirmation_name = glue::glue(affirmation_name) |>
-        gsub(pattern = "[[:punct:]]", replacement = "", x = _)
+        gsub(pattern = "[[:punct:]]", replacement = "", x = _),
+      assigned_to = NA
     ) |>
     # change order of excel report
     dplyr::select(
-      "affirmation_name", "data_frames", "id", "priority", "columns", "error_n",
+      "assigned_to", "affirmation_name", "data_frames", "id", "priority", "columns", "error_n",
       "total_n", "error_rate", "label", "data"
-      )
+      ) |>
+    dplyr::arrange(affirmation_name)
 
   # checking to make sure sheet names are not too long
   if (any(nchar(df_summary$affirmation_name) > 31)){
@@ -78,8 +80,11 @@ affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", ov
   # this is the affirmation data that gets exported to each sheets
   # drops data column and columns with all NAs
   df_export <- .identify_keep_data(df_summary) |>
-    # add empty Notes column to end
-    mutate(Notes = NA)
+    # add empty Status and Comment columns to the end
+    dplyr::mutate(
+      Status = NA,
+      Comment = NA
+      )
 
   # create excel workbook with all affirmations
   wb <- openxlsx2::wb_workbook() |>
@@ -101,8 +106,7 @@ affirm_report_raw_data <- function() {
     dplyr::mutate(
       error_rate = .data$error_n / .data$total_n,
       .after = "total_n"
-    ) |>
-    dplyr::arrange(.data$error_n == 0L, .data$priority, dplyr::desc(.data$error_rate))
+    )
 
   df_report
 }

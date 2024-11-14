@@ -236,7 +236,7 @@ test_that("excel report helpers", {
 
   expect_equal(
     .compute_col_width(mtcars_modified[, 1:4]),
-    c("car" = 22, "mpg" = 8, "cyl" = 8, "disp" = 8, "Notes" = 30)
+    c("car" = 22, "mpg" = 8, "cyl" = 8, "disp" = 8, "Comment" = 30)
   )
 
   expect_equal(
@@ -251,3 +251,75 @@ test_that("excel report helpers", {
   )
 
 })
+
+test_that("Excel report summary sheet has 'assigned_to' column", {
+
+  expect_true({
+    affirm_init(replace = TRUE)
+    options('affirm.id_cols' = "car")
+    affirm_true(
+      mtcars_modified,
+      label = "mpg lt 33",
+      id = 1,
+      condition = mpg < 33,
+      data_frames = "a-mtcars"
+    )
+    affirm_true(
+      mtcars_modified,
+      label = "No. cylinders must be 4 or 6",
+      condition = cyl %in% c(4, 6),
+      id = 2,
+      data_frames = "b-mtcars"
+    )
+    affirm_true(
+      mtcars_modified,
+      label = "car must be a number",
+      condition = is.numeric(car),
+      id = 3,
+      data_frames = "c-mtcars"
+    );
+    tempxlsx <- tempfile(fileext = ".xlsx")
+    affirm_report_excel(file = tempxlsx, affirmation_name = "{data_frames}{id}")
+    vec_summary_cols <- openxlsx2::read_xlsx(tempxlsx, sheet = "Summary") |> names()
+    first_summary_col <- head(vec_summary_cols, 1)
+    vec_summary_cols[1] == "assigned_to"
+  }
+  )
+}
+)
+
+test_that("Excel report summary sheet has 'Status' and 'Comment' columns at the end", {
+
+  expect_true({
+    affirm_init(replace = TRUE)
+    options('affirm.id_cols' = "car")
+    affirm_true(
+      mtcars_modified,
+      label = "mpg gt 33",
+      id = 1,
+      condition = mpg > 33,
+      data_frames = "a-mtcars"
+    )
+    affirm_true(
+      mtcars_modified,
+      label = "No. cylinders must be 4 or 6",
+      condition = cyl %in% c(4, 6),
+      id = 2,
+      data_frames = "b-mtcars"
+    )
+    affirm_true(
+      mtcars_modified,
+      label = "car must be a number",
+      condition = is.numeric(car),
+      id = 3,
+      data_frames = "c-mtcars"
+    );
+    tempxlsx <- tempfile(fileext = ".xlsx")
+    affirm_report_excel(file = tempxlsx, affirmation_name = "{data_frames}{id}")
+    vec_summary_cols <- openxlsx2::read_xlsx(tempxlsx, sheet = "Summary") |> names()
+    last_summary_cols <- tail(vec_summary_cols, 2)
+    all(last_summary_cols == c("Status", "Comment"))
+  }
+  )
+}
+)

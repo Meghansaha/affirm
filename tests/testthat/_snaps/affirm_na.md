@@ -38,18 +38,18 @@
       affirm_report_raw_data()$data
     Output
       [[1]]
+      # A tibble: 2 x 1
+        x    
+        <lgl>
+      1 TRUE 
+      2 FALSE
+      
+      [[2]]
       # A tibble: 3 x 1
         x    
         <lgl>
       1 NA   
       2 NA   
       3 NA   
-      
-      [[2]]
-      # A tibble: 2 x 1
-        x    
-        <lgl>
-      1 TRUE 
-      2 FALSE
       
 
