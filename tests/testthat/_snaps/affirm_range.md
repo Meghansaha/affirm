@@ -172,31 +172,27 @@
       affirm_report_raw_data()$data
     Output
       [[1]]
-                           mpg            ..label..
-      Mazda RX4           21.0 MPG is >21 and <30.4
-      Mazda RX4 Wag       21.0 MPG is >21 and <30.4
-      Hornet Sportabout   18.7 MPG is >21 and <30.4
-      Valiant             18.1 MPG is >21 and <30.4
-      Duster 360          14.3 MPG is >21 and <30.4
-      Merc 280            19.2 MPG is >21 and <30.4
-      Merc 280C           17.8 MPG is >21 and <30.4
-      Merc 450SE          16.4 MPG is >21 and <30.4
-      Merc 450SL          17.3 MPG is >21 and <30.4
-      Merc 450SLC         15.2 MPG is >21 and <30.4
-      Cadillac Fleetwood  10.4 MPG is >21 and <30.4
-      Lincoln Continental 10.4 MPG is >21 and <30.4
-      Chrysler Imperial   14.7 MPG is >21 and <30.4
-      Fiat 128            32.4 MPG is >21 and <30.4
-      Honda Civic         30.4 MPG is >21 and <30.4
-      Toyota Corolla      33.9 MPG is >21 and <30.4
-      Dodge Challenger    15.5 MPG is >21 and <30.4
-      AMC Javelin         15.2 MPG is >21 and <30.4
-      Camaro Z28          13.3 MPG is >21 and <30.4
-      Pontiac Firebird    19.2 MPG is >21 and <30.4
-      Lotus Europa        30.4 MPG is >21 and <30.4
-      Ford Pantera L      15.8 MPG is >21 and <30.4
-      Ferrari Dino        19.7 MPG is >21 and <30.4
-      Maserati Bora       15.0 MPG is >21 and <30.4
+                           mpg              ..label..
+      Hornet Sportabout   18.7 MPG is >=21 and <=30.4
+      Valiant             18.1 MPG is >=21 and <=30.4
+      Duster 360          14.3 MPG is >=21 and <=30.4
+      Merc 280            19.2 MPG is >=21 and <=30.4
+      Merc 280C           17.8 MPG is >=21 and <=30.4
+      Merc 450SE          16.4 MPG is >=21 and <=30.4
+      Merc 450SL          17.3 MPG is >=21 and <=30.4
+      Merc 450SLC         15.2 MPG is >=21 and <=30.4
+      Cadillac Fleetwood  10.4 MPG is >=21 and <=30.4
+      Lincoln Continental 10.4 MPG is >=21 and <=30.4
+      Chrysler Imperial   14.7 MPG is >=21 and <=30.4
+      Fiat 128            32.4 MPG is >=21 and <=30.4
+      Toyota Corolla      33.9 MPG is >=21 and <=30.4
+      Dodge Challenger    15.5 MPG is >=21 and <=30.4
+      AMC Javelin         15.2 MPG is >=21 and <=30.4
+      Camaro Z28          13.3 MPG is >=21 and <=30.4
+      Pontiac Firebird    19.2 MPG is >=21 and <=30.4
+      Ford Pantera L      15.8 MPG is >=21 and <=30.4
+      Ferrari Dino        19.7 MPG is >=21 and <=30.4
+      Maserati Bora       15.0 MPG is >=21 and <=30.4
       
       [[2]]
                            mpg             ..label..
@@ -249,27 +245,31 @@
       Maserati Bora       15.0 MPG is >=21 and <30.4
       
       [[4]]
-                           mpg              ..label..
-      Hornet Sportabout   18.7 MPG is >=21 and <=30.4
-      Valiant             18.1 MPG is >=21 and <=30.4
-      Duster 360          14.3 MPG is >=21 and <=30.4
-      Merc 280            19.2 MPG is >=21 and <=30.4
-      Merc 280C           17.8 MPG is >=21 and <=30.4
-      Merc 450SE          16.4 MPG is >=21 and <=30.4
-      Merc 450SL          17.3 MPG is >=21 and <=30.4
-      Merc 450SLC         15.2 MPG is >=21 and <=30.4
-      Cadillac Fleetwood  10.4 MPG is >=21 and <=30.4
-      Lincoln Continental 10.4 MPG is >=21 and <=30.4
-      Chrysler Imperial   14.7 MPG is >=21 and <=30.4
-      Fiat 128            32.4 MPG is >=21 and <=30.4
-      Toyota Corolla      33.9 MPG is >=21 and <=30.4
-      Dodge Challenger    15.5 MPG is >=21 and <=30.4
-      AMC Javelin         15.2 MPG is >=21 and <=30.4
-      Camaro Z28          13.3 MPG is >=21 and <=30.4
-      Pontiac Firebird    19.2 MPG is >=21 and <=30.4
-      Ford Pantera L      15.8 MPG is >=21 and <=30.4
-      Ferrari Dino        19.7 MPG is >=21 and <=30.4
-      Maserati Bora       15.0 MPG is >=21 and <=30.4
+                           mpg            ..label..
+      Mazda RX4           21.0 MPG is >21 and <30.4
+      Mazda RX4 Wag       21.0 MPG is >21 and <30.4
+      Hornet Sportabout   18.7 MPG is >21 and <30.4
+      Valiant             18.1 MPG is >21 and <30.4
+      Duster 360          14.3 MPG is >21 and <30.4
+      Merc 280            19.2 MPG is >21 and <30.4
+      Merc 280C           17.8 MPG is >21 and <30.4
+      Merc 450SE          16.4 MPG is >21 and <30.4
+      Merc 450SL          17.3 MPG is >21 and <30.4
+      Merc 450SLC         15.2 MPG is >21 and <30.4
+      Cadillac Fleetwood  10.4 MPG is >21 and <30.4
+      Lincoln Continental 10.4 MPG is >21 and <30.4
+      Chrysler Imperial   14.7 MPG is >21 and <30.4
+      Fiat 128            32.4 MPG is >21 and <30.4
+      Honda Civic         30.4 MPG is >21 and <30.4
+      Toyota Corolla      33.9 MPG is >21 and <30.4
+      Dodge Challenger    15.5 MPG is >21 and <30.4
+      AMC Javelin         15.2 MPG is >21 and <30.4
+      Camaro Z28          13.3 MPG is >21 and <30.4
+      Pontiac Firebird    19.2 MPG is >21 and <30.4
+      Lotus Europa        30.4 MPG is >21 and <30.4
+      Ford Pantera L      15.8 MPG is >21 and <30.4
+      Ferrari Dino        19.7 MPG is >21 and <30.4
+      Maserati Bora       15.0 MPG is >21 and <30.4
       
 
 ---
@@ -301,11 +301,11 @@
       affirm_report_raw_data()$data
     Output
       [[1]]
-                 x
-      1 2000-01-01
-      
-      [[2]]
       [1] x
       <0 rows> (or 0-length row.names)
+      
+      [[2]]
+                 x
+      1 2000-01-01
       
 
