@@ -12,7 +12,8 @@ affirm_report_gt()
 affirm_report_excel(
   file,
   affirmation_name = "{data_frames}{id}",
-  overwrite = TRUE
+  overwrite = TRUE,
+  previous_file = NULL
 )
 
 affirm_report_raw_data()
@@ -20,12 +21,14 @@ affirm_report_raw_data()
 \arguments{
 \item{file}{A file path to save the xlsx file}
 
-\item{affirmation_name}{A string for affirmation names; the item name
+\item{affirmation_name}{A string for affirmation names; the item name}
+
+\item{overwrite}{Overwrite existing file (Defaults to \code{TRUE} as with \code{write.table})}
+
+\item{previous_file}{A string of the file path to the previous affirmation workbook that needs to be updated
 in curly brackets is replaced with the item value (see glue::glue). Item names
 accepted include: \code{id}, \code{label}, \code{priority}, \code{data_frames}, \code{columns}, \code{error_n}, \code{total_n}.
 Defaults to \code{"{data_frames}{id}"}.}
-
-\item{overwrite}{Overwrite existing file (Defaults to \code{TRUE} as with \code{write.table})}
 }
 \value{
 gt table

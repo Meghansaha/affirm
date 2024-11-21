@@ -6,6 +6,7 @@
 #'
 #' @inheritParams openxlsx::write.xlsx
 #' @param affirmation_name A string for affirmation names; the item name
+#' @param previous_file A string of the file path to the previous affirmation workbook that needs to be updated
 #' in curly brackets is replaced with the item value (see glue::glue). Item names
 #' accepted include: `id`, `label`, `priority`, `data_frames`, `columns`, `error_n`, `total_n`.
 #' Defaults to `"{data_frames}{id}"`.
@@ -56,9 +57,11 @@ affirm_report_gt <- function() {
 
 #' @rdname affirm_report
 #' @export
-affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", overwrite = TRUE) {
+affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", overwrite = TRUE, previous_file = NULL) {
 
-  df_summary <-
+  prev_exists <- !is.null(previous_file)
+
+  df_summary_init <-
     affirm_report_raw_data() |>
     dplyr::mutate(
       affirmation_name = glue::glue(affirmation_name) |>
@@ -73,25 +76,36 @@ affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", ov
     dplyr::arrange(affirmation_name)
 
   # checking to make sure sheet names are not too long
-  if (any(nchar(df_summary$affirmation_name) > 31)){
+  if (any(nchar(df_summary_init$affirmation_name) > 31)){
     stop("At least one sheet name exceeds the allowed 31 characters.")
+  }
+
+  if(prev_exists){
+    df_summary_current <-
+      df_summary_init |>
+      dplyr::select(-"assigned_to")
+
+    df_summary <- .update_summary_sheet(df_summary_current, previous_file)
+
+  } else{
+    df_summary <- df_summary_init
   }
 
   # this is the affirmation data that gets exported to each sheets
   # drops data column and columns with all NAs
-  df_export <- .identify_keep_data(df_summary) |>
-    # add empty Status and Comment columns to the end
-    dplyr::mutate(
-      Status = NA,
-      Comment = NA
-      )
+    df_export <- .identify_keep_data(df_summary) |>
+      # add empty Status and Comment columns to the end
+      dplyr::mutate(
+        Status = NA,
+        Comment = NA
+        )
 
   # create excel workbook with all affirmations
   wb <- openxlsx2::wb_workbook() |>
     .add_summary_sheet(df_export)
 
   for (i in seq_len(nrow(df_summary))){
-    wb <- .add_affirmation_sheet(wb, df_summary[i, ])
+    wb <- .add_affirmation_sheet(wb, df_summary[i, ], prev_exists)
   }
 
   openxlsx2::wb_save(wb, file = file, overwrite = TRUE)

@@ -192,15 +192,20 @@
 #' summary table
 #' @return a workbook object
 #'
-.add_affirmation_sheet <- function(wb, df_summary_row){
+.add_affirmation_sheet <- function(wb, df_summary_row, prev_exists){
 
   # data frame of single affirmation results
+  if(prev_exists){
   df_affirmation <-
-    df_summary_row[["data"]][[1]] |>
-    dplyr::mutate(
-      Status = NA,
-      Comment = NA
-    )
+    df_summary_row[["data"]][[1]]
+  } else{
+    df_affirmation <-
+      df_summary_row[["data"]][[1]] |>
+      dplyr::mutate(
+        Status = NA,
+        Comment = NA
+      )
+  }
 
   # labels of the data frame of single affirmation results
 
@@ -265,3 +270,98 @@
 
   return(wb)
 }
+
+#' Utils-report:  update current summary sheet with previous assignment, status, and comment information
+#' @noRd
+#' @param df_summary_current The summary data frame from the current affirm session
+#' @param prev_wb a workbook object. The previous workbook that is being updated
+#' @return an updated summary data frame
+#'
+.update_summary_sheet <- function(df_summary_current, prev_wb){
+
+  # Pull previous wb into the environment
+  prev_wb <- openxlsx2::wb_load(prev_wb)
+  prev_affirmation_sheets <- prev_wb$sheet_names[-1]
+
+  # Pull out the old summary's affirmation names, assigned to, status, and comments
+  df_summary_prev <-
+    openxlsx2::wb_to_df(
+      prev_wb,
+      sheet = "Summary",
+      skip_empty_cols = TRUE
+    ) |>
+    dplyr::select(
+      "assigned_to",
+      "affirmation_name",
+      "Status",
+      "Comment"
+    )
+
+  # Join old info into new summary sheet
+  df_summary_updated_init <-
+    df_summary_current |>
+    dplyr::left_join(
+      df_summary_prev,
+      by = "affirmation_name"
+  ) |>
+    dplyr::select(
+      c("assigned_to", "affirmation_name", "data_frames", "id", "columns", "error_n",
+        "total_n", "error_rate", "label", "Status", "Comment", "data")
+    )
+
+  # Pull out new affirmation dfs
+  lst_new_affirmation_dfs <- list()
+
+  for (i in seq_len(nrow(df_summary_current))){
+    lst_new_affirmation_dfs[[i]] <-
+      df_summary_current[i,"data"] |>
+      dplyr::mutate(row_id = dplyr::row_number())
+
+  }
+
+  names(lst_new_affirmation_dfs) <- df_summary_current |> dplyr::pull("affirmation_name")
+
+  # Pull out old affirmation dfs
+  lst_prev_affirmation_dfs <- list()
+
+  for (i in seq_len(length(prev_affirmation_sheets))){
+    lst_prev_affirmation_dfs[[i]] <-
+      openxlsx2::wb_to_df(
+        prev_wb,
+        sheet = i + 1,
+        start_row = 4,
+        skip_empty_cols = TRUE
+      ) |>
+      dplyr::mutate(row_id = dplyr::row_number())
+  }
+
+
+  # Pull out column names to join by
+  lst_df_names <- list()
+
+  for (i in seq_len(nrow(df_summary_updated_init))){
+    lst_df_names[[i]] <- names(lst_new_affirmation_dfs[[i]][["data"]][[1]])
+  }
+
+  lst_updated_affirmation_dfs <- list()
+
+  # Join old and new affirmations
+  for (i in seq_len(nrow(df_summary_updated_init))){
+    lst_updated_affirmation_dfs[[i]] <-
+      lst_new_affirmation_dfs[[i]][["data"]][[1]] |>
+      dplyr::left_join(lst_prev_affirmation_dfs[[i]], by = lst_df_names[[i]]) |>
+      dplyr::select(-"row_id")
+  }
+
+
+  names(lst_updated_affirmations) <- df_summary_current |> dplyr::pull("affirmation_name")
+
+  df_summary_updated <-
+    df_summary_updated_init |>
+    dplyr::mutate(data = lst_updated_affirmation_dfs)
+
+
+ return(df_summary_updated)
+
+}
+
