@@ -288,7 +288,8 @@
     openxlsx2::wb_to_df(
       prev_wb,
       sheet = "Summary",
-      skip_empty_cols = TRUE
+      skip_empty_cols = TRUE,
+      convert = FALSE
     ) |>
     dplyr::select(
       "assigned_to",
@@ -334,7 +335,6 @@
       ) |>
       dplyr::mutate(row_id = dplyr::row_number())
   }
-
 
   # Pull out column names to join by
   lst_df_names <- list()
