@@ -319,7 +319,7 @@
         row_id = dplyr::row_number(),
         join_key = do.call(
           paste,
-          c(dplyr::select(., dplyr::everything()),
+          c(dplyr::select(dplyr::everything()),
             list(sep = " ")
           )
         )
@@ -342,7 +342,7 @@
         row_id = dplyr::row_number(),
         join_key = do.call(
           paste,
-          c(dplyr::select(., dplyr::everything(), -c("Status", "Comment")),
+          c(dplyr::select(dplyr::everything(), -c("Status", "Comment")),
             list(sep = " ")
           )
         )
