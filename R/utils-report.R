@@ -331,7 +331,8 @@
         prev_wb,
         sheet = i + 1,
         start_row = 4,
-        skip_empty_cols = TRUE
+        skip_empty_cols = TRUE,
+        convert = FALSE
       ) |>
       dplyr::mutate(row_id = dplyr::row_number())
   }
