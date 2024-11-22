@@ -288,8 +288,7 @@
     openxlsx2::wb_to_df(
       prev_wb,
       sheet = "Summary",
-      skip_empty_cols = TRUE,
-      convert = FALSE
+      skip_empty_cols = TRUE
     ) |>
     dplyr::select(
       "assigned_to",
@@ -316,8 +315,15 @@
   for (i in seq_len(nrow(df_summary_current))){
     lst_new_affirmation_dfs[[i]] <-
       df_summary_current[i,"data"] |>
-      dplyr::mutate(row_id = dplyr::row_number())
-
+      dplyr::mutate(
+        row_id = dplyr::row_number(),
+        join_key = do.call(
+          paste,
+          c(dplyr::select(., dplyr::everything()),
+            list(sep = " ")
+          )
+        )
+      )
   }
 
   names(lst_new_affirmation_dfs) <- df_summary_current |> dplyr::pull("affirmation_name")
@@ -331,17 +337,19 @@
         prev_wb,
         sheet = i + 1,
         start_row = 4,
-        skip_empty_cols = TRUE,
-        convert = FALSE
       ) |>
-      dplyr::mutate(row_id = dplyr::row_number())
-  }
-
-  # Pull out column names to join by
-  lst_df_names <- list()
-
-  for (i in seq_len(nrow(df_summary_updated_init))){
-    lst_df_names[[i]] <- names(lst_new_affirmation_dfs[[i]][["data"]][[1]])
+      dplyr::mutate(
+        row_id = dplyr::row_number(),
+        join_key = do.call(
+          paste,
+          c(dplyr::select(., dplyr::everything(), -c("Status", "Comment")),
+            list(sep = " ")
+          )
+        )
+      ) |>
+      dplyr::select(
+        "join_key", "Status", "Comment"
+      )
   }
 
   lst_updated_affirmation_dfs <- list()
@@ -350,10 +358,9 @@
   for (i in seq_len(nrow(df_summary_updated_init))){
     lst_updated_affirmation_dfs[[i]] <-
       lst_new_affirmation_dfs[[i]][["data"]][[1]] |>
-      dplyr::left_join(lst_prev_affirmation_dfs[[i]], by = lst_df_names[[i]]) |>
-      dplyr::select(-"row_id")
+      dplyr::left_join(lst_prev_affirmation_dfs[[i]], by = "join_key") |>
+      dplyr::select(-c("row_id", "join_key"))
   }
-
 
   names(lst_updated_affirmations) <- df_summary_current |> dplyr::pull("affirmation_name")
 
