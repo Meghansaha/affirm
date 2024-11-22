@@ -319,7 +319,7 @@
         row_id = dplyr::row_number(),
         join_key = do.call(
           paste,
-          c(dplyr::select(dplyr::everything()),
+          c(dplyr::select(df_summary_current[i,"data"], dplyr::everything()),
             list(sep = " ")
           )
         )
@@ -342,7 +342,12 @@
         row_id = dplyr::row_number(),
         join_key = do.call(
           paste,
-          c(dplyr::select(dplyr::everything(), -c("Status", "Comment")),
+          c(dplyr::select(
+            openxlsx2::wb_to_df(
+            prev_wb,
+            sheet = i + 1,
+            start_row = 4,
+          ),dplyr::everything(), -c("Status", "Comment")),
             list(sep = " ")
           )
         )
