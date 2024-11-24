@@ -93,12 +93,30 @@ affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", ov
 
   # this is the affirmation data that gets exported to each sheets
   # drops data column and columns with all NAs
-    df_export <- .identify_keep_data(df_summary) |>
-      # add empty Status and Comment columns to the end
-      dplyr::mutate(
-        Status = NA,
-        Comment = NA
+    df_export_init <- .identify_keep_data(df_summary)
+    vec_summary_cols <- names(df_export_init)
+    original_summary_cols <- vec_summary_cols[!vec_summary_cols %in% c("Status", "Comment")]
+    add_status <- !"Status" %in% vec_summary_cols
+    add_comment <- !"Comment" %in% vec_summary_cols
+
+    if(add_status){
+      df_export_init <-
+        df_export_init |>
+        dplyr::mutate(Status = NA)
+    }
+
+    if(add_comment){
+      df_export_init <-
+        df_export_init |>
+        dplyr::mutate(Comment = NA)
+    }
+
+    df_export <-
+      df_export_init |>
+      dplyr::select(
+        dplyr::all_of(original_summary_cols), "Status", "Comment"
         )
+
 
   # create excel workbook with all affirmations
   wb <- openxlsx2::wb_workbook() |>

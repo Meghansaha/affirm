@@ -313,18 +313,20 @@
   lst_new_affirmation_dfs <- list()
 
   for (i in seq_len(nrow(df_summary_current))){
+
     lst_new_affirmation_dfs[[i]] <-
-      df_summary_current[i,"data"] |>
+
+      df_summary_current[[i, "data"]][[1]] |>
       dplyr::mutate(
         row_id = dplyr::row_number(),
         join_key = do.call(
           paste,
-          c(dplyr::select(df_summary_current[i,"data"], dplyr::everything()),
+          c(dplyr::select(df_summary_current[[i, "data"]][[1]], dplyr::everything()),
             list(sep = " ")
           )
         )
       )
-  }
+      }
 
   names(lst_new_affirmation_dfs) <- df_summary_current |> dplyr::pull("affirmation_name")
 
@@ -333,10 +335,21 @@
 
   for (i in seq_len(length(prev_affirmation_sheets))){
     lst_prev_affirmation_dfs[[i]] <-
+
+      if(df_summary_current[[i, "data"]][[1]] |> nrow() == 0){
+        dplyr::tibble(
+          join_key = character(),
+          row_id = integer(),
+          Status = NA,
+          Comment = NA
+        )
+
+      } else{
       openxlsx2::wb_to_df(
         prev_wb,
         sheet = i + 1,
         start_row = 4,
+        skip_empty_cols = TRUE
       ) |>
       dplyr::mutate(
         row_id = dplyr::row_number(),
@@ -347,14 +360,16 @@
             prev_wb,
             sheet = i + 1,
             start_row = 4,
+            skip_empty_cols = TRUE
           ),dplyr::everything(), -c("Status", "Comment")),
             list(sep = " ")
           )
         )
       ) |>
       dplyr::select(
-        "join_key", "Status", "Comment"
+        "join_key", "row_id", "Status", "Comment"
       )
+      }
   }
 
   lst_updated_affirmation_dfs <- list()
@@ -362,12 +377,12 @@
   # Join old and new affirmations
   for (i in seq_len(nrow(df_summary_updated_init))){
     lst_updated_affirmation_dfs[[i]] <-
-      lst_new_affirmation_dfs[[i]][["data"]][[1]] |>
-      dplyr::left_join(lst_prev_affirmation_dfs[[i]], by = "join_key") |>
+      lst_new_affirmation_dfs[[i]] |>
+      dplyr::left_join(lst_prev_affirmation_dfs[[i]], by = c("join_key", "row_id")) |>
       dplyr::select(-c("row_id", "join_key"))
   }
 
-  names(lst_updated_affirmations) <- df_summary_current |> dplyr::pull("affirmation_name")
+  names(lst_updated_affirmation_dfs) <- df_summary_current |> dplyr::pull("affirmation_name")
 
   df_summary_updated <-
     df_summary_updated_init |>
