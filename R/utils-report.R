@@ -318,7 +318,6 @@
 
       df_summary_current[[i, "data"]][[1]] |>
       dplyr::mutate(
-        row_id = dplyr::row_number(),
         join_key = do.call(
           paste,
           c(dplyr::select(df_summary_current[[i, "data"]][[1]], dplyr::everything()),
@@ -339,7 +338,6 @@
       if(df_summary_current[[i, "data"]][[1]] |> nrow() == 0){
         dplyr::tibble(
           join_key = character(),
-          row_id = integer(),
           Status = NA,
           Comment = NA
         )
@@ -352,7 +350,6 @@
         skip_empty_cols = TRUE
       ) |>
       dplyr::mutate(
-        row_id = dplyr::row_number(),
         join_key = do.call(
           paste,
           c(dplyr::select(
@@ -367,7 +364,7 @@
         )
       ) |>
       dplyr::select(
-        "join_key", "row_id", "Status", "Comment"
+        "join_key", "Status", "Comment"
       )
       }
   }
@@ -378,8 +375,8 @@
   for (i in seq_len(nrow(df_summary_updated_init))){
     lst_updated_affirmation_dfs[[i]] <-
       lst_new_affirmation_dfs[[i]] |>
-      dplyr::left_join(lst_prev_affirmation_dfs[[i]], by = c("join_key", "row_id")) |>
-      dplyr::select(-c("row_id", "join_key"))
+      dplyr::left_join(lst_prev_affirmation_dfs[[i]], by = "join_key") |>
+      dplyr::select(-"join_key")
   }
 
   names(lst_updated_affirmation_dfs) <- df_summary_current |> dplyr::pull("affirmation_name")
