@@ -78,22 +78,6 @@ affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", ov
         cli::cli_abort()
     }
 
-    #Previous file should be an excel workbook with the correct file suffix#
-    wb_prefixes <- "\\.(xlsx|xlsm|xlsb)$"
-
-    # Check that input has acceptable suffix#
-    prev_suffix_check <- !grepl(wb_prefixes, previous_file)
-
-    if (prev_suffix_check){
-      # If not, grab the string that was input
-      prev_file_string <- glue::glue("\"{previous_file}\"")
-
-      # And abort to the console#
-      c("{cli::col_yellow('`previous_file`')} should be a string file path for an {cli::style_bold('Affirm Excel Workbook')} of type {cli::col_yellow(cli::style_italic('.xlsx, .xlsm, or .xlsb'))}",
-        "x" = 'You\'ve supplied {cli::col_red(prev_file_string)} as the `previous_file` file path.') |>
-      cli::cli_abort()
-    }
-
   }
 
   # Create an initial summary df#

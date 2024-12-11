@@ -159,26 +159,6 @@
       [1m[22m[33m![39m [33m`previous_file`[39m should be of class [34m<character>[39m
       [31mx[39m You've supplied a [33m`previous_file`[39m input of class [31m<data.frame>[39m
 
-# Test that cli output is as expected if `previous_file` suffix check throws an error. [plain]
-
-    Code
-      affirm_report_excel(file = tempxlsx, affirmation_name = "{data_frames}{id}",
-        previous_file = "test.txt")
-    Condition
-      Error in `affirm_report_excel()`:
-      ! `previous_file` should be a string file path for an Affirm Excel Workbook of type .xlsx, .xlsm, or .xlsb
-      x You've supplied "test.txt" as the `previous_file` file path.
-
-# Test that cli output is as expected if `previous_file` suffix check throws an error. [ansi]
-
-    Code
-      affirm_report_excel(file = tempxlsx, affirmation_name = "{data_frames}{id}",
-        previous_file = "test.txt")
-    Condition
-      [1m[33mError[39m in `affirm_report_excel()`:[22m
-      [1m[22m[33m![39m [33m`previous_file`[39m should be a string file path for an [1mAffirm Excel Workbook[22m of type [3m[33m.xlsx, .xlsm, or .xlsb[39m[23m
-      [31mx[39m You've supplied [31m"test.txt"[39m as the `previous_file` file path.
-
 # Test that duplicate data throws an error when updating a previous Affirm report. [plain]
 
     Code

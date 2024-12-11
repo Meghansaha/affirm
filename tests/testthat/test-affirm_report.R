@@ -375,33 +375,6 @@ cli::test_that_cli(
 )
 
 
-cli::test_that_cli(
-  configs = c("plain", "ansi"),
-  desc = "Test that cli output is as expected if `previous_file` suffix check throws an error.",
-  code = {
-    affirm_init(replace = TRUE)
-    affirm_true(
-      mtcars,
-      label = "mpg gt 20",
-      id = 1,
-      condition = mpg > 20,
-      data_frames = "mtcars"
-    );
-
-    tempxlsx <- tempfile(fileext = ".xlsx");
-
-    testthat::expect_snapshot({
-      affirm_report_excel(
-        file = tempxlsx,
-        affirmation_name = "{data_frames}{id}",
-        previous_file = "test.txt"
-      )
-    },
-    error = TRUE
-    )
-  }
-)
-
 test_that("Test that previous assigned_to info is carried forward in summary sheet", {
 
   affirm_init(replace = TRUE)
