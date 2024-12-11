@@ -1,6 +1,6 @@
 .affirm_report_gt_stylings <- function(x) {
   x |>
-  gt::cols_width("status_color" ~ gt::px(6)) |>
+    gt::cols_width("status_color" ~ gt::px(6)) |>
     gt::cols_label(
       status_color = "",
       id = gt::md("**ID**"),
@@ -172,7 +172,7 @@
 #'
 .add_summary_sheet <- function(wb, df_export){
   wb |>
-  # add front page with summary information ----
+    # add front page with summary information ----
   openxlsx2::wb_add_worksheet("Summary") |>
     openxlsx2::wb_add_data_table(
       x = df_export,
@@ -196,8 +196,8 @@
 
   # data frame of single affirmation results
   if(prev_exists){
-  df_affirmation <-
-    df_summary_row[["data"]][[1]]
+    df_affirmation <-
+      df_summary_row[["data"]][[1]]
   } else{
     df_affirmation <-
       df_summary_row[["data"]][[1]] |>
@@ -303,7 +303,7 @@
     dplyr::left_join(
       df_summary_prev,
       by = "affirmation_name"
-  ) |>
+    ) |>
     dplyr::select(
       c("assigned_to", "affirmation_name", "data_frames", "id", "columns", "error_n",
         "total_n", "error_rate", "label", "Status", "Comment", "data")
@@ -325,9 +325,11 @@
           )
         )
       )
-      }
+  }
 
-  names(lst_new_affirmation_dfs) <- df_summary_current |> dplyr::pull("affirmation_name")
+  vec_affirmation_names <- df_summary_current |> dplyr::pull("affirmation_name")
+
+  names(lst_new_affirmation_dfs) <- vec_affirmation_names
 
   # Pull out old affirmation dfs
   lst_prev_affirmation_dfs <- list()
@@ -335,6 +337,8 @@
   for (i in seq_len(length(prev_affirmation_sheets))){
     lst_prev_affirmation_dfs[[i]] <-
 
+      # If an affirmation is empty
+      # Fill it with placeholders#
       if(df_summary_current[[i, "data"]][[1]] |> nrow() == 0){
         dplyr::tibble(
           join_key = character(),
@@ -343,50 +347,116 @@
         )
 
       } else{
-      openxlsx2::wb_to_df(
-        prev_wb,
-        sheet = i + 1,
-        start_row = 4,
-        skip_empty_cols = TRUE
-      ) |>
-      dplyr::mutate(
-        join_key = do.call(
-          paste,
-          c(dplyr::select(
-            openxlsx2::wb_to_df(
-            prev_wb,
-            sheet = i + 1,
-            start_row = 4,
-            skip_empty_cols = TRUE
-          ),dplyr::everything(), -c("Status", "Comment")),
-            list(sep = " ")
+        # Otherwise, pull in the previous report#
+        openxlsx2::wb_to_df(
+          prev_wb,
+          sheet = i + 1,
+          start_row = 4,
+          skip_empty_cols = TRUE
+        ) |>
+          dplyr::mutate(
+            join_key = do.call(
+              paste,
+              c(dplyr::select(
+                openxlsx2::wb_to_df(
+                  prev_wb,
+                  sheet = i + 1,
+                  start_row = 4,
+                  skip_empty_cols = TRUE
+                ),dplyr::everything(), -c("Status", "Comment")),
+                list(sep = " ")
+              )
+            )
+          ) |>
+          dplyr::select(
+            "join_key", "Status", "Comment"
           )
-        )
-      ) |>
-      dplyr::select(
-        "join_key", "Status", "Comment"
-      )
       }
   }
 
+  # Create an empty list to store updated affirmations#
   lst_updated_affirmation_dfs <- list()
+  lst_join_key_dupes <- list()
 
-  # Join old and new affirmations
+  # Join old and new affirmations#
   for (i in seq_len(nrow(df_summary_updated_init))){
     lst_updated_affirmation_dfs[[i]] <-
       lst_new_affirmation_dfs[[i]] |>
-      dplyr::left_join(lst_prev_affirmation_dfs[[i]], by = "join_key") |>
+      dplyr::left_join(lst_prev_affirmation_dfs[[i]], by = "join_key");
+
+    # Search for potential duplicates in the join keys#
+    lst_join_key_dupes[[i]] <-
+      lst_updated_affirmation_dfs[[i]] |>
+      dplyr::mutate(
+        "row_id" = dplyr::row_number()
+      ) |>
+      dplyr::mutate(
+        .by = "join_key",
+        "dupe_count" = dplyr::n(),
+        "flag_row" = .data$dupe_count > 1
+      ) |>
+      dplyr::reframe(
+        .by = "join_key",
+        "dupe_rows" = ifelse(.data$flag_row, knitr::combine_words(.data$row_id), NA)
+      );
+
+    # Grab the affirmations names to be used throughout
+    names(lst_join_key_dupes) <- vec_affirmation_names
+
+    # Remove the join keys#
+    lst_updated_affirmation_dfs[[i]] <-
+      lst_updated_affirmation_dfs[[i]] |>
       dplyr::select(-"join_key")
   }
 
-  names(lst_updated_affirmation_dfs) <- df_summary_current |> dplyr::pull("affirmation_name")
+  # Create lists to check the join keys by affirmation#
+  lst_join_key_check <- list()
+  lst_n_dupes <- list()
 
-  df_summary_updated <-
-    df_summary_updated_init |>
-    dplyr::mutate(data = lst_updated_affirmation_dfs)
+  # Pull out the rows of known duplicates for error messaging#
+  for (i in seq_len(nrow(df_summary_updated_init))){
+    lst_join_key_check[[i]] <-
+      lst_join_key_dupes[[i]]$dupe_rows[which(!is.na(lst_join_key_dupes[[i]]$dupe_rows))] |>
+      unique()
 
+    # Pull out the total unique duplicates found for cli pluralization#
+    lst_n_dupes[[i]] <- length(lst_join_key_check[[i]])
 
- return(df_summary_updated)
+  }
+
+  # Pull out the names of the affirmations to keep it organized
+  names(lst_join_key_check) <- vec_affirmation_names
+  names(lst_n_dupes) <- vec_affirmation_names
+  names(lst_updated_affirmation_dfs) <- vec_affirmation_names
+
+  # Add a check to detect duplicates#
+  any_dupes <- !lst_join_key_check |> unlist() |> rlang::is_bare_logical()
+
+  # Create an empty vector for possible dupes messaging#
+  dupe_list <- c()
+
+  # If any dupes are found, create a custom cli message to alert the user#
+  if (any_dupes){
+    for (i in seq_len(lst_join_key_check |> length())){
+      dupe_list[i] <- c(
+        ">" = "Duplicate {cli::qty(lst_n_dupes[[1]])} row{?s} detected in affirmation {cli::col_yellow(cli::style_bold(cli::style_italic(names(lst_join_key_check)[1])))} at {cli::qty(lst_n_dupes[[1]])} row{?s} {cli::col_red(lst_join_key_check[[1]])}."
+      )
+    }
+
+    # Print to the console#
+    dupe_list |>
+      append(c("\n","i" = "Please review and remove duplicate data before updated a previous Affirm Excel Report.")) |>
+      # call needed to have the error reference affirm_report_excel fx
+      cli::cli_abort(call = sys.call(-1))
+
+  } else{
+    # Otherwise continue on#
+    df_summary_updated <-
+      df_summary_updated_init |>
+      dplyr::mutate(data = lst_updated_affirmation_dfs)
+  }
+
+  return(df_summary_updated)
 
 }
 

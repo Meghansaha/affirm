@@ -6,10 +6,10 @@
 #'
 #' @inheritParams openxlsx::write.xlsx
 #' @param affirmation_name A string for affirmation names; the item name
-#' @param previous_file A string of the file path to the previous affirmation workbook that needs to be updated
 #' in curly brackets is replaced with the item value (see glue::glue). Item names
 #' accepted include: `id`, `label`, `priority`, `data_frames`, `columns`, `error_n`, `total_n`.
 #' Defaults to `"{data_frames}{id}"`.
+#' @param previous_file A string of the file path to the previous affirmation workbook that needs to be updated
 #'
 #' @return gt table
 #' @name affirm_report
@@ -59,8 +59,44 @@ affirm_report_gt <- function() {
 #' @export
 affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", overwrite = TRUE, previous_file = NULL) {
 
+  # Check to see if previous file is supplied#
   prev_exists <- !is.null(previous_file)
 
+  if(prev_exists){
+    # Check that previous file input is a character#
+    prev_class_check <- !is.character(previous_file)
+
+    # If prev file isn't a character, throw an error#
+    if (prev_class_check){
+
+      # Grab actual class
+      actual_prev_class <- previous_file |> class()
+
+      # Abort to the console#
+      c("{cli::col_yellow('`previous_file`')} should be of class {.cls character}",
+        "x" = 'You\'ve supplied a {cli::col_yellow("`previous_file`")} input of class {cli::col_red("<",{actual_prev_class},">")}') |>
+        cli::cli_abort()
+    }
+
+    #Previous file should be an excel workbook with the correct file suffix#
+    wb_prefixes <- "\\.(xlsx|xlsm|xlsb)$"
+
+    # Check that input has acceptable suffix#
+    prev_suffix_check <- !grepl(wb_prefixes, previous_file)
+
+    if (prev_suffix_check){
+      # If not, grab the string that was input
+      prev_file_string <- glue::glue("\"{previous_file}\"")
+
+      # And abort to the console#
+      c("{cli::col_yellow('`previous_file`')} should be a string file path for an {cli::style_bold('Affirm Excel Workbook')} of type {cli::col_yellow(cli::style_italic('.xlsx, .xlsm, or .xlsb'))}",
+        "x" = 'You\'ve supplied {cli::col_red(prev_file_string)} as the `previous_file` file path.') |>
+      cli::cli_abort()
+    }
+
+  }
+
+  # Create an initial summary df#
   df_summary_init <-
     affirm_report_raw_data() |>
     dplyr::mutate(
@@ -68,26 +104,30 @@ affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", ov
         gsub(pattern = "[[:punct:]]", replacement = "", x = _),
       assigned_to = NA
     ) |>
-    # change order of excel report
+    # change order of excel report#
     dplyr::select(
       "assigned_to", "affirmation_name", "data_frames", "id", "priority", "columns", "error_n",
       "total_n", "error_rate", "label", "data"
       ) |>
     dplyr::arrange(affirmation_name)
 
-  # checking to make sure sheet names are not too long
+  # checking to make sure sheet names are not too long#
   if (any(nchar(df_summary_init$affirmation_name) > 31)){
     stop("At least one sheet name exceeds the allowed 31 characters.")
   }
 
+  # If a previous report is supplied, remove 'assigned_to'#
+  # as we'll carry it forward from the previous report#
   if(prev_exists){
     df_summary_current <-
       df_summary_init |>
       dplyr::select(-"assigned_to")
 
+    # Start the process to update the report#
     df_summary <- .update_summary_sheet(df_summary_current, previous_file)
 
   } else{
+    # Otherwise, proceed without updating#
     df_summary <- df_summary_init
   }
 
@@ -99,24 +139,26 @@ affirm_report_excel <- function(file, affirmation_name = "{data_frames}{id}", ov
     add_status <- !"Status" %in% vec_summary_cols
     add_comment <- !"Comment" %in% vec_summary_cols
 
+    # If status column is missing, add it#
     if(add_status){
       df_export_init <-
         df_export_init |>
         dplyr::mutate(Status = NA)
     }
 
+    # If comment column is missing, add it
     if(add_comment){
       df_export_init <-
         df_export_init |>
         dplyr::mutate(Comment = NA)
     }
 
+    # Create a final export with all applicable columns#
     df_export <-
       df_export_init |>
       dplyr::select(
         dplyr::all_of(original_summary_cols), "Status", "Comment"
         )
-
 
   # create excel workbook with all affirmations
   wb <- openxlsx2::wb_workbook() |>
